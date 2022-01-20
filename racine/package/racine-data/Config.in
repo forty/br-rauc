@@ -1,0 +1,20 @@
+config BR2_PACKAGE_RACINE_DATA
+	bool "racine-data"
+	help
+		Data partition and R/O rootfs for Racine
+    select BR2_PACKAGE_HOST_E2TOOLS
+    select BR2_PACKAGE_HOST_E2FSPROGS
+
+	depends on BR2_INIT_SYSTEMD
+
+comment "Racine data requires systemd as init"
+	depends on !BR2_INIT_SYSTEMD
+
+if BR2_PACKAGE_RACINE_DATA
+
+# config BR2_PACKAGE_RACINE_DATA_XXX
+# 	string "XXXX"
+# 	help
+# 	  XXXX
+
+endif # BR2_PACKAGE_RACINE_DATA

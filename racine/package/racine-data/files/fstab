@@ -1,0 +1,5 @@
+/dev/root   /      auto     ro                                                                                                                       0  1
+LABEL=data  /data  ext4     rw,x-systemd.requires=expand-data-part.service,x-systemd.growfs                                                          0  2
+overlay     /etc   overlay  lowerdir=/etc,upperdir=/data/etc,workdir=/data/.etc_work,x-systemd.after=/data                                           0  0
+overlay     /var   overlay  lowerdir=/var,upperdir=/data/var,workdir=/data/.var_work,x-systemd.after=/data,x-systemd.before=systemd-journald.service 0  0
+overlay     /root  overlay  lowerdir=/root,upperdir=/data/home,workdir=/data/.home_work,x-systemd.after=/data                                        0  0

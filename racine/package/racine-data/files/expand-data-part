@@ -1,0 +1,25 @@
+#!/bin/sh
+
+# Auto expand /dev/data partition
+
+set -e
+
+PATH=/usr/sbin:/usr/bin:/sbin:/bin
+
+PARTITION="$(readlink -f /dev/disk/by-label/data)"
+PARTITION_NAME="$(basename "${PARTITION}")"
+DEVICE_NAME="$(basename $(readlink -f /sys/class/block/${PARTITION_NAME}/../))"
+DEVICE="/dev/${DEVICE_NAME}"
+PART_NUM="$(cat "/sys/class/block/${PARTITION_NAME}/partition")"
+
+FREE="$(parted -ms "${DEVICE}" unit B print free quit | tail -1)"
+
+if ! echo "${FREE}" | grep -q 'free;$'; then
+   echo "Cannot expand data partition: no free space"
+   exit 0
+fi
+
+echo "Expanding data partition (${PARTITION})"
+parted -ms "${DEVICE}" resizepart "${PART_NUM}" 100% quit
+
+# Filesystem will be resized by systemd growfs

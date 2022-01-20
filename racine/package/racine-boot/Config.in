@@ -1,0 +1,76 @@
+config BR2_PACKAGE_RACINE_BOOT
+	bool "racine-boot"
+	help
+		RAUC and u-boot setup for Racine
+    depends on BR2_LINUX_KERNEL
+	depends on !BR2_TARGET_ROOTFS_INITRAMFS # kernel install target
+    select BR2_LINUX_KERNEL_INSTALL_TARGET
+
+	select BR2_PACKAGE_HOST_UBOOT_TOOLS
+    depends on BR2_TARGET_UBOOT
+
+	depends on BR2_TOOLCHAIN_HAS_THREADS # rauc
+	depends on BR2_USE_MMU # rauc
+	depends on BR2_USE_WCHAR # rauc
+	select BR2_PACKAGE_RAUC
+	select BR2_PACKAGE_HOST_RAUC
+
+	depends on BR2_INIT_SYSTEMD
+
+comment "Racine boot requires U-Boot as bootloader and systemd as init"
+	depends on !(BR2_TARGET_UBOOT && BR2_INIT_SYSTEMD)
+
+if BR2_PACKAGE_RACINE_BOOT
+
+config BR2_PACKAGE_RACINE_BOOT_RAUC_COMPATIBLE
+	string "RAUC compatible"
+	help
+	   RAUC compabible string
+
+	   https://rauc.readthedocs.io/en/latest/reference.html#system-configuration-file
+
+config BR2_PACKAGE_RACINE_BOOT_ROOTFS_A
+	string "Root FS A device"
+	help
+	   First block device with the root FS
+
+	   https://rauc.readthedocs.io/en/latest/reference.html#system-configuration-file
+
+config BR2_PACKAGE_RACINE_BOOT_ROOTFS_B
+	string "Root FS B device"
+	help
+	   Second block device with the root FS
+
+	   https://rauc.readthedocs.io/en/latest/reference.html#system-configuration-file
+
+config BR2_PACKAGE_RACINE_BOOT_BOOTARGS
+	string "Kernel boot arguments"
+	help
+	   Boot arguments for the kernel (added to the generic ones)
+
+config BR2_PACKAGE_RACINE_BOOT_UBOOT_DEVICE_TYPE
+	string "U-Boot storage device type"
+	help
+	   Storage device type to use in U-Boot (mmc, usb, ...)
+
+config BR2_PACKAGE_RACINE_BOOT_UBOOT_DEVICE_NUMBER
+	string "U-Boot storage device number"
+	help
+	   Storage device number to use in U-Boot (0 for the first device of device type)
+
+config BR2_PACKAGE_RACINE_BOOT_UBOOT_ENV_DEVICE
+	string "U-Boot env image size"
+	help
+	   Block device where the U-Boot env image is stored
+
+config BR2_PACKAGE_RACINE_BOOT_UBOOT_ENV_SIZE
+	string "U-Boot env image size"
+	help
+	   Size of the U-Boot env image (configured by CONFIG_ENV_SIZE in U-Boot config)
+
+config BR2_PACKAGE_RACINE_BOOT_UBOOT_ENV_OFFSET
+	string "U-Boot env image offset"
+	help
+	   Offset of the U-Boot env image (configured by CONFIG_ENV_OFFSET in U-Boot config)
+
+endif # BR2_PACKAGE_RACINE_BOOT
