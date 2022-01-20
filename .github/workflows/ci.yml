@@ -1,0 +1,92 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    container:
+      image: debian:bullseye
+    steps:
+      - name: Install packages
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update -y
+          apt-get install -y --no-install-recommends \
+                sed \
+                make \
+                binutils \
+                build-essential \
+                gcc \
+                g++ \
+                bash \
+                patch \
+                gzip \
+                bzip2 \
+                perl \
+                tar \
+                cpio \
+                unzip \
+                rsync \
+                file \
+                bc \
+                bzr \
+                ca-certificates \
+                locales \
+                brz \
+                cvs \
+                git \
+                mercurial \
+                rsync \
+                subversion \
+                wget \
+                libssl-dev
+          apt-get -y autoremove
+          apt-get -y clean
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Cache buildroot-ccache
+        id: buildroot-ccache
+        uses: actions/cache@v2
+        with:
+          path: out/ccache
+          key: buildroot-ccache-${{ hashFiles('.git/modules/buildroot/HEAD') }}
+          restore-keys: |
+            buildroot-ccache-
+
+      - name: Cache buildroot-dl
+        id: buildroot-dl
+        uses: actions/cache@v2
+        with:
+          path: out/dl
+          key: buildroot-dl-${{ hashFiles('.git/modules/buildroot/HEAD') }}
+          restore-keys: |
+            buildroot-dl-
+
+      - name: Setup locales
+        run: |
+          sed -i 's/# \(en_US.UTF-8\)/\1/' /etc/locale.gen
+          /usr/sbin/locale-gen
+
+      - name: Build
+        run: |
+          export LC_ALL=en_US.UTF-8
+          export FORCE_UNSAFE_CONFIGURE=1
+          make
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: rpi-sdcard-image
+          path: out/raspberrypi/images/sdcard.img
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: rpi-update-bundle
+          path: out/raspberrypi/images/update.raucb

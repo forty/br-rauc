@@ -1,0 +1,13 @@
+#!/bin/sh
+
+sudo true
+
+while true; do
+
+    while ! [ -e /dev/ttyUSB0 ]; do
+        sleep 1
+    done
+
+    sudo screen /dev/ttyUSB0 115200
+
+done

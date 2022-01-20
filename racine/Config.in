@@ -1,0 +1,2 @@
+source "$BR2_EXTERNAL_RACINE_PATH/package/racine-boot/Config.in"
+source "$BR2_EXTERNAL_RACINE_PATH/package/racine-data/Config.in"
