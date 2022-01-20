@@ -1,0 +1,16 @@
+[Unit]
+Description=Mount data partition
+RefuseManualStart=true
+RefuseManualStop=true
+
+DefaultDependencies=no
+Before=systemd-journal-flush.service
+Requires=dev-disk-by\x2dlabel-data.device
+After=dev-disk-by\x2dlabel-data.device var.mount
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/mount-data-part
+
+[Install]
+WantedBy=local-fs.target
