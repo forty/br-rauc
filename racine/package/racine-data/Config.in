@@ -13,10 +13,17 @@ config BR2_PACKAGE_RACINE_DATA
 	depends on BR2_USE_WCHAR # parted
     select BR2_PACKAGE_PARTED
 
+    depends on BR2_INSTALL_LIBSTDCPP # gptfdisk
+    select BR2_PACKAGE_GPTFDISK
+    select BR2_PACKAGE_GPTFDISK_SGDISK
+
 	depends on BR2_INIT_SYSTEMD
 
 comment "Racine data requires systemd as init"
 	depends on !BR2_INIT_SYSTEMD
+
+comment "gptfdisk needs a toolchain w/ C++"
+	depends on !BR2_INSTALL_LIBSTDCPP
 
 if BR2_PACKAGE_RACINE_DATA
 

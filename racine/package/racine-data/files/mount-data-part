@@ -14,6 +14,11 @@ DEVICE="/dev/${DEVICE_NAME}"
 PART_NUM="$(cat "/sys/class/block/${PARTITION_NAME}/partition")"
 
 expand_data_part() {
+    if sgdisk --verify "${DEVICE}" 2>&1 | grep "Problem: The secondary header's self-pointer" >/dev/null; then
+        echo "Moving GPT backup header to the end"
+        sgdisk -e "${DEVICE}"
+        partprobe
+    fi
     free="$(parted -ms "${DEVICE}" unit B print free quit | tail -1)"
 
     if ! echo "${free}" | grep -q 'free;$'; then

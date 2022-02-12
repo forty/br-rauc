@@ -8,11 +8,11 @@ statusfile=/data/central-status.raucs
 path=ca.pem
 
 [slot.rootfs.0]
-device=/dev/disk/by-uuid/@RACINE_BOOT_ROOTFS_A_UUID@
+device=/dev/disk/by-partlabel/@RACINE_BOOT_ROOTFS_A_PART_LABEL@
 type=ext4
 bootname=A
 
 [slot.rootfs.1]
-device=/dev/disk/by-uuid/@RACINE_BOOT_ROOTFS_B_UUID@
+device=/dev/disk/by-partlabel/@RACINE_BOOT_ROOTFS_B_PART_LABEL@
 type=ext4
 bootname=B
