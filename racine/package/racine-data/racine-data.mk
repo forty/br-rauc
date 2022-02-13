@@ -21,7 +21,7 @@ endef
 
 define RACINE_DATA_INSTALL_INIT_SYSTEMD
 	$(INSTALL) -D -m 0644 $(@D)/mount-data-part.service \
-		$(TARGET_DIR)/usr/lib/systemd/system/mount-data-part.service
+ 		$(TARGET_DIR)/usr/lib/systemd/system/mount-data-part.service
 endef
 
 $(eval $(generic-package))

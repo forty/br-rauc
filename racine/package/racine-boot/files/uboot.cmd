@@ -16,33 +16,28 @@ if test -z "${MACHINE_ID}"; then
     echo "> Machine id is ${MACHINE_ID}"
 fi
 
-setenv rootfs
-setenv kpart
+part_label=
 
 for slot in "${BOOT_ORDER}"; do
-  if test -n "${rootfs}"; then
+  if test -n "${part_label}"; then
     # skip remaining slots
   elif test "${slot}" = "A"; then
     if test ${BOOT_A_LEFT} -gt 0; then
       echo "> Found valid slot ${slot}, ${BOOT_A_LEFT} attempts remaining"
       setexpr BOOT_A_LEFT ${BOOT_A_LEFT} - 1
-      setenv rootfs "PARTLABEL=${rootfs_A_label}"
-      setenv kpart "#${rootfs_A_label}"
+      part_label="${rootfs_A_label}"
     fi
   elif test "${slot}" = "B"; then
     if test ${BOOT_B_LEFT} -gt 0; then
       echo "> Found valid slot ${slot}, ${BOOT_B_LEFT} attempts remaining"
       setexpr BOOT_B_LEFT ${BOOT_B_LEFT} - 1
-      setenv rootfs "PARTLABEL=${rootfs_B_label}"
-      setenv kpart "#${rootfs_B_label}"
+      part_label="${rootfs_B_label}"
     fi
   fi
 done
 
-echo "> Booting partition ${devtype} ${devnum}${kpart} (Linux rootfs = ${rootfs})"
 
-if test -n "${rootfs}"; then
-  setenv bootargs "root=${rootfs}" ro rootwait "systemd.machine_id=${MACHINE_ID}" "${bootargs_extra}"
+if test -n "${part_label}"; then
   saveenv
 else
   echo "> No valid slot found, resetting tries to 3"
@@ -52,11 +47,16 @@ else
   reset
 fi
 
+echo "> Booting partition ${devtype} ${devnum}#${part_label}..."
+
+setenv bootargs "root=PARTLABEL=${part_label}" ro rootwait "systemd.machine_id=${MACHINE_ID}" "${bootargs_extra}"
+echo "> bootarg = ${bootargs}"
+
 echo "> Loading Kernel..."
-ext4load "${devtype}" "${devnum}${kpart}" "${kernel_addr_r}" "boot/${kernel_filename}"
+ext4load "${devtype}" "${devnum}#${part_label}" "${kernel_addr_r}" "boot/${kernel_filename}"
 
 echo "> Loading FDT..."
-ext4load "${devtype}" "${devnum}${kpart}" "${fdt_addr_r}" "boot/${fdtfile}"
+ext4load "${devtype}" "${devnum}#${part_label}" "${fdt_addr_r}" "boot/${fdtfile}"
 
 echo "> Booting System..."
 bootz "${kernel_addr_r}" - "${fdt_addr_r}"

@@ -8,26 +8,43 @@ set -e
 PATH=/usr/sbin:/usr/bin:/sbin:/bin
 
 PARTITION="$(readlink -f /dev/disk/by-label/data)"
-PARTITION_NAME="$(basename "${PARTITION}")"
-DEVICE_NAME="$(basename $(readlink -f /sys/class/block/${PARTITION_NAME}/../))"
-DEVICE="/dev/${DEVICE_NAME}"
-PART_NUM="$(cat "/sys/class/block/${PARTITION_NAME}/partition")"
 
 expand_data_part() {
-    if sgdisk --verify "${DEVICE}" 2>&1 | grep "Problem: The secondary header's self-pointer" >/dev/null; then
-        echo "Moving GPT backup header to the end"
-        sgdisk -e "${DEVICE}"
-        partprobe
-    fi
-    free="$(parted -ms "${DEVICE}" unit B print free quit | tail -1)"
+    # Expand data partition to all the available space
+    # Inspired from HassOS partition expander
+    #
 
-    if ! echo "${free}" | grep -q 'free;$'; then
-        echo "Cannot expand data partition: no free space"
+    device="/dev/$(lsblk -no pkname "${PARTITION}")"
+    part_num="$(cat "/sys/class/block/$(basename "${PARTITION}")/partition")"
+
+    # TODO: check is gpt
+    # TODO: check is is last part
+
+    if sfdisk --verify "${device}" 2>&1 | grep "The backup GPT table is not on the end of the device."; then
+        echo "Moving GPT backup header to the end"
+        sfdisk --relocate gpt-bak-std "${device}"
+    fi
+
+    # TODO: check free space
+    disk_lastlba=$(sfdisk -d "${device}" | grep '^last-lba:' | awk '{print $2}')
+    part_lastlba=$(sfdisk -lq "${device}" | grep "^${PARTITION}" | awk '{print $3}')
+    free_space=$(echo "${disk_lastlba}-${part_lastlba}" | bc)
+
+    echo "Disk last LBA = ${disk_lastlba} Partition last LBA = ${part_lastlba} Free space = ${free_space}"
+
+    if [ "${free_space}" -le "16384" ]; then
+        echo "No resize of data partition needed"
         return 0
     fi
 
     echo "Expanding data partition (${PARTITION})"
-    parted -ms "${DEVICE}" resizepart "${PART_NUM}" 100% quit
+    echo ", +" | sfdisk --no-reread --no-tell-kernel -N "${part_num}" "${device}"
+    sfdisk --verify "${device}"
+
+    # Update the kernel's partition table
+    partx -u "${device}"
+    udevadm settle
+
     resize2fs "${PARTITION}"
 }
 

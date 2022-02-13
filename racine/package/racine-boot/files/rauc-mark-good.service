@@ -2,6 +2,7 @@
 Description=RAUC Good-marking Service
 After=boot-complete.target
 Requires=boot-complete.target
+# TODO: after devices
 
 [Service]
 Type=oneshot
